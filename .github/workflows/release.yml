@@ -49,7 +49,7 @@ jobs:
       v_tag: ${{steps.version.outputs.version_tag}}
     steps:
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
           with:
             fetch-depth: 0
         - name: Get Version Tag
@@ -108,7 +108,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       -
         name: Login to Registry
