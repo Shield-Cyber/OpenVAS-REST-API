@@ -16,7 +16,7 @@ download_file() {
     local filepath="$instDir/$filename"
 
     echo -e "${YELLOW}Downloading $filename to $instDir... ${NC}"
-    curl -S "$url" -o "$filepath"
+    curl -fsSL "$url" -o "$filepath"
     echo -e "${GREEN}$filename downloaded to $instDir! ${NC}"
 
     echo "$filepath"
@@ -66,34 +66,36 @@ ensure_directory "$instDir"
 echo -e "${YELLOW}Installing Shield Scanner and its Dependencies ${NC}"
 
 # Install Docker
-echo -e "${YELLOW}Removing existing Docker installations... ${NC}"
-sudo apt-get remove -y docker docker-engine docker.io containerd runc
-
-echo -e "${YELLOW}Updating package repositories... ${NC}"
-sudo apt-get update
-
-echo -e "${YELLOW}Installing necessary dependencies... ${NC}"
-sudo apt-get install -y ca-certificates curl gnupg
-
-echo -e "${YELLOW}Setting up Docker GPG key... ${NC}"
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-echo -e "${YELLOW}Configuring Docker repository... ${NC}"
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-echo -e "${YELLOW}Updating package repositories... ${NC}"
-sudo apt-get update
-
 echo -e "${YELLOW}Installing Docker... ${NC}"
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose
+curl -fsSL https://get.docker.com | sh || { echo -e "${RED}Docker installation script failed. ${NC}" && echo -e "${YELLOW}Reach out to Shield team for assistance in manual installation. ${NC}"; exit 1; }
 
 # Check if Docker installation was successful
 if command -v docker &> /dev/null ; then
     echo -e "${GREEN}Docker Installed successfully! ${NC}"
 else
-    echo -e "${RED}Docker installation failed. Exiting with code 1.${NC}"
+    echo -e "${RED}Docker installation failed.${NC}"
+    echo -e "${YELLOW}Reach out to Shield team for assistance in manual installation. ${NC}"
+    exit 1
+fi
+
+# Start Docker Daemon
+echo -e "${YELLOW}Starting Docker daemon... ${NC}"
+if command -v systemctl &> /dev/null; then
+    sudo systemctl start docker
+    sudo systemctl enable docker
+elif command -v service &> /dev/null; then
+    sudo service docker start
+else
+    echo -e "${RED}Cannot determine the init system to start Docker. Please start Docker manually.${NC}"
+    echo -e "${YELLOW}Reach out to Shield team for assistance in manual installation. ${NC}"
+    exit 1
+fi
+
+# Check if Docker daemon started successfully
+if sudo docker info &> /dev/null ; then
+    echo -e "${GREEN}Docker daemon started successfully! ${NC}"
+else
+    echo -e "${RED}Failed to start Docker daemon. Exiting with code 1.${NC}"
     exit 1
 fi
 

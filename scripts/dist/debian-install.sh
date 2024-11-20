@@ -82,9 +82,13 @@ download_file() {
 sudo apt update -y && sudo apt upgrade -y 
 echo "Installing prerequisites..."
 sudo apt update -y
-sudo apt install -y wget
-sudo apt install -y dotnet-sdk-8.0 
-sudo apt install -y aspnetcore-runtime-8.0 
+sudo apt install wget -y
+curl -o packages-microsoft-prod.deb https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb # Someone needs to make this dynamic and check the OS version.
+sudo dpkg -i packages-microsoft-prod.deb
+sudo rm packages-microsoft-prod.deb
+sudo apt update -y
+sudo apt install -y dotnet-sdk-8.0
+sudo apt install -y aspnetcore-runtime-8.0
 sudo apt install -y jq 
 sudo apt install -y unzip
 sudo apt install -y curl
